@@ -715,7 +715,7 @@ void HomePageMenu(bool UserMode) {
         printf(BRIGHTPINK219 ANSI_STYLE_BOLD"(STATUS: ADMIN) Sinkronisasi: %s-%s\n\n"ANSI_COLOR_RESET, SignedInAccountUserName, SignedInAccountAdminCode);
         printf(BRIGHTBLUE159"\t\t\t  Selamat Datang di " ANSI_STYLE_BOLD ANSI_STYLE_UNDERLINE"SKYR D'Laundry!"ANSI_COLOR_RESET "\n\t\t\t  " BRIGHTBLUE158 ANSI_STYLE_ITALIC"@PRE-RELEASE V1.0.0; (14/12/2023)\n\n\t\t  "ANSI_COLOR_RESET BRIGHTMAGENTA217 ANSI_STYLE_BOLD"Layanan apakah yang ingin Anda kunjungi saat ini?\n"ANSI_COLOR_RESET);
         getchar();
-        HomePageMenu();
+        HomePageMenu(ADMIN);
     }
 }
 
@@ -729,6 +729,722 @@ void ServicesNo01(signed int ServiceOption) {
             puts(BRIGHTGREEN154"══════════════════════════════════ SKYR D'Laundry ══════════════════════════════════"ANSI_COLOR_RESET);
             puts(BRIGHTGREEN155"══════════════════════════════ In Progress :: Service ══════════════════════════════"ANSI_COLOR_RESET);
             puts(BRIGHTGREEN156"═══════════════════════════ Service Room 01 ➡ 💐 Regular ═══════════════════════════"ANSI_COLOR_RESET);
+
+            printf(BRIGHTPINK219 ANSI_STYLE_BOLD"(STATUS: USER) Sinkronisasi: %s\n\n"ANSI_COLOR_RESET, SignedInAccountUserName);
+            printf(BRIGHTBLUE159"\t\t\t  Selamat Datang di " ANSI_STYLE_BOLD ANSI_STYLE_UNDERLINE"SKYR D'Laundry!"ANSI_COLOR_RESET "\n\t\t\t  " BRIGHTBLUE158 ANSI_STYLE_ITALIC"@PRE-RELEASE V1.0.0; (14/12/2023)\n"ANSI_COLOR_RESET);
+
+            puts("");
+            puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"═════════════════════════════ CUCI KILOAN (per. kg) ════════════════════════════════"ANSI_COLOR_RESET);
+            puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"════════════════════════════ DAFTAR CEK-LIST PAKAIAN ═══════════════════════════════"ANSI_COLOR_RESET);
+            puts(BRIGHTPURPLE213 ANSI_STYLE_BOLD"Asertif Banyak Tipe Pakaian: 24 Tipe (per. 8 baris, 3 kolom)\n");
+            puts(BRIGHTRED209 ANSI_STYLE_BOLD"Catatan: (akumulasi banyak pakaian akan ditimbang untuk dihitung massa total"ANSI_COLOR_RESET);
+            puts(BRIGHTRED209 ANSI_STYLE_BOLD"         pakaian dari yang memesan layanan D'Laundry dalam format: Rp6.000,00/kg)."ANSI_COLOR_RESET);
+
+            puts("");
+            puts(BRIGHTMAGENTA210"[01] Kaos           [09] Kebaya             [17] Baju Muslim"ANSI_COLOR_RESET);
+            puts(BRIGHTMAGENTA210"[02] Kemeja         [10] Sajadah            [18] Sarung Tangan"ANSI_COLOR_RESET);
+            puts(BRIGHTMAGENTA210"[03] Kaos Dalam     [11] Celana Panjang     [19] Gaun"ANSI_COLOR_RESET);
+            puts(BRIGHTMAGENTA210"[04] Kaos Kaki      [12] Celana Pendek      [20] Sapu Tangan"ANSI_COLOR_RESET);
+            puts(BRIGHTMAGENTA210"[05] Sweater        [13] Celana Dalam       [21] Kerudung"ANSI_COLOR_RESET);
+            puts(BRIGHTMAGENTA210"[06] Jaket          [14] Handuk             [22] Ciput"ANSI_COLOR_RESET);
+            puts(BRIGHTMAGENTA210"[07] Rompi          [15] Rok                [23] Sarung"ANSI_COLOR_RESET);
+            puts(BRIGHTMAGENTA210"[08] Mukena         [16] Daster             [24] Bra"ANSI_COLOR_RESET);
+            puts(BRIGHTRED216 ANSI_STYLE_BOLD ANSI_STYLE_ITALIC"➡ Ketik [0] untuk kembali ke menu utama program... ."ANSI_COLOR_RESET);
+            puts(BRIGHTGREEN156 ANSI_STYLE_BOLD ANSI_STYLE_ITALIC"➡ Ketik [99] untuk mengkonfirmasi isi laundry... ."ANSI_COLOR_RESET);
+
+            puts("");
+            printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &CheckListOn); fflush(stdin);
+        } while (ValidIntInput == 0);
+
+        switch (CheckListOn) {
+            case 0:
+                HomePageMenu(USER); break;
+            
+            /* NOTE: First 8 rows and first column... */
+            case 1:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Shirt)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Kaos\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.Shirt = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.Shirt = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 2:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(T-Shirt)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Kemeja\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.TShirt = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.TShirt = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 3:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Inner Shirt)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Kaos Dalam\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.InnerShirt = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.InnerShirt = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 4:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Socks)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Kaos Kaki\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.Socks = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.Socks = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 5:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Sweater)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Switer\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.Sweater = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.Sweater = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 6:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Jacket)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Jaket\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.Jacket = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.Jacket = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 7:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Vest)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Rompi\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.Vest = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.Vest = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 8:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Mukena)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Mukena\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.Mukena = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.Mukena = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            
+            /* NOTE: Second 8 rows and second column... */
+            case 9:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Kebaya)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Kebaya\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.Kebaya = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.Kebaya = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 10:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Prayer Mat)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Sajadah\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.PrayerMat = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.PrayerMat = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 11:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Long Pants)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Celana Panjang\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.LongPants = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.LongPants = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 12:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Short Pants)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Celana Pendek\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.ShortPants = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.ShortPants = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 13:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Inner Pants)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Celana Dalam\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.InnerPants = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.InnerPants = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 14:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Towel)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Handuk\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.Towel = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.Towel = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 15:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Skirt)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Rok\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.Skirt = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.Skirt = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 16:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(House Dress)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Daster\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.HouseDress = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.HouseDress = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            
+            /* NOTE: Third 8 rows and third column... */
+            case 17:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Muslim Clothing)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Baju Muslim\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.MuslimClothing = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.MuslimClothing = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 18:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Gloves)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Sarung Tangan\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.Gloves = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.Gloves = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 19:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Gown Dress)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Gaun\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.GownDress = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.GownDress = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 20:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Handkerchief)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Sapu Tangan\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.Handkerchief = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.Handkerchief = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 21:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Veil)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Kerudung\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.Veil = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.Veil = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 22:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Chip)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Ciput\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.Chip = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.Chip = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 23:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Sarong)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Sarung\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.Sarong = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.Sarong = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 24:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Bra)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Bra\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.Bra = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.Bra = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+
+            default: ServicesNo01(1); break;
+        }
+
+    } else if (ServiceOption == 2) {
+        do {
+            ClearScreen();
+            puts(BRIGHTGREEN154"══════════════════════════════════ SKYR D'Laundry ══════════════════════════════════"ANSI_COLOR_RESET);
+            puts(BRIGHTGREEN155"══════════════════════════════ In Progress :: Service ══════════════════════════════"ANSI_COLOR_RESET);
+            puts(BRIGHTGREEN156"═══════════════════════════ Service Room 02 ➡ 💐 Express ═══════════════════════════"ANSI_COLOR_RESET);
+
+            printf(BRIGHTPINK219 ANSI_STYLE_BOLD"(STATUS: USER) Sinkronisasi: %s\n\n"ANSI_COLOR_RESET, SignedInAccountUserName);
+            printf(BRIGHTBLUE159"\t\t\t  Selamat Datang di " ANSI_STYLE_BOLD ANSI_STYLE_UNDERLINE"SKYR D'Laundry!"ANSI_COLOR_RESET "\n\t\t\t  " BRIGHTBLUE158 ANSI_STYLE_ITALIC"@PRE-RELEASE V1.0.0; (14/12/2023)\n"ANSI_COLOR_RESET);
+
+            puts("");
+            puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"═════════════════════════════ CUCI KILOAN (per. kg) ════════════════════════════════"ANSI_COLOR_RESET);
+            puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"════════════════════════════ DAFTAR CEK-LIST PAKAIAN ═══════════════════════════════"ANSI_COLOR_RESET);
+            puts(BRIGHTPURPLE213 ANSI_STYLE_BOLD"Asertif Banyak Tipe Pakaian: 24 Tipe (per. 8 baris, 3 kolom)\n");
+            puts(BRIGHTRED209 ANSI_STYLE_BOLD"Catatan: (akumulasi banyak pakaian akan ditimbang untuk dihitung massa total"ANSI_COLOR_RESET);
+            puts(BRIGHTRED209 ANSI_STYLE_BOLD"         pakaian dari yang memesan layanan D'Laundry dalam format: Rp6.000,00/kg)."ANSI_COLOR_RESET);
+
+            puts("");
+            puts(BRIGHTMAGENTA210"[01] Kaos           [09] Kebaya             [17] Baju Muslim"ANSI_COLOR_RESET);
+            puts(BRIGHTMAGENTA210"[02] Kemeja         [10] Sajadah            [18] Sarung Tangan"ANSI_COLOR_RESET);
+            puts(BRIGHTMAGENTA210"[03] Kaos Dalam     [11] Celana Panjang     [19] Gaun"ANSI_COLOR_RESET);
+            puts(BRIGHTMAGENTA210"[04] Kaos Kaki      [12] Celana Pendek      [20] Sapu Tangan"ANSI_COLOR_RESET);
+            puts(BRIGHTMAGENTA210"[05] Sweater        [13] Celana Dalam       [21] Kerudung"ANSI_COLOR_RESET);
+            puts(BRIGHTMAGENTA210"[06] Jaket          [14] Handuk             [22] Ciput"ANSI_COLOR_RESET);
+            puts(BRIGHTMAGENTA210"[07] Rompi          [15] Rok                [23] Sarung"ANSI_COLOR_RESET);
+            puts(BRIGHTMAGENTA210"[08] Mukena         [16] Daster             [24] Bra"ANSI_COLOR_RESET);
+            puts(BRIGHTRED216 ANSI_STYLE_BOLD ANSI_STYLE_ITALIC"➡ Ketik [0] untuk kembali ke menu utama program... ."ANSI_COLOR_RESET);
+            puts(BRIGHTGREEN156 ANSI_STYLE_BOLD ANSI_STYLE_ITALIC"➡ Ketik [99] untuk mengkonfirmasi isi laundry... ."ANSI_COLOR_RESET);
+
+            puts("");
+            printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &CheckListOn); fflush(stdin);
+        } while (ValidIntInput == 0);
+
+        switch (CheckListOn) {
+            case 0:
+                HomePageMenu(USER); break;
+            
+            /* NOTE: First 8 rows and first column... */
+            case 1:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Shirt)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Kaos\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.Shirt = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.Shirt = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 2:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(T-Shirt)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Kemeja\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.TShirt = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.TShirt = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 3:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Inner Shirt)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Kaos Dalam\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.InnerShirt = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.InnerShirt = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 4:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Socks)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Kaos Kaki\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.Socks = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.Socks = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 5:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Sweater)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Switer\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.Sweater = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.Sweater = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 6:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Jacket)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Jaket\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.Jacket = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.Jacket = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 7:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Vest)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Rompi\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.Vest = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.Vest = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 8:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Mukena)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Mukena\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.Mukena = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.Mukena = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            
+            /* NOTE: Second 8 rows and second column... */
+            case 9:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Kebaya)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Kebaya\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.Kebaya = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.Kebaya = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 10:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Prayer Mat)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Sajadah\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.PrayerMat = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.PrayerMat = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 11:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Long Pants)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Celana Panjang\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.LongPants = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.LongPants = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 12:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Short Pants)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Celana Pendek\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.ShortPants = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.ShortPants = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 13:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Inner Pants)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Celana Dalam\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.InnerPants = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.InnerPants = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 14:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Towel)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Handuk\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.Towel = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.Towel = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 15:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Skirt)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Rok\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.Skirt = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.Skirt = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 16:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(House Dress)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Daster\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.HouseDress = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.HouseDress = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            
+            /* NOTE: Third 8 rows and third column... */
+            case 17:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Muslim Clothing)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Baju Muslim\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.MuslimClothing = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.MuslimClothing = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 18:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Gloves)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Sarung Tangan\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.Gloves = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.Gloves = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 19:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Gown Dress)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Gaun\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.GownDress = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.GownDress = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 20:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Handkerchief)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Sapu Tangan\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.Handkerchief = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.Handkerchief = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 21:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Veil)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Kerudung\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.Veil = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.Veil = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 22:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Chip)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Ciput\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.Chip = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.Chip = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 23:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Sarong)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Sarung\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.Sarong = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.Sarong = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 24:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Bra)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Bra\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.Bra = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.Bra = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+
+            default: ServicesNo01(1); break;
+        }
+
+    } else if (ServiceOption == 3) {
+        do {
+            ClearScreen();
+            puts(BRIGHTGREEN154"══════════════════════════════════ SKYR D'Laundry ══════════════════════════════════"ANSI_COLOR_RESET);
+            puts(BRIGHTGREEN155"══════════════════════════════ In Progress :: Service ══════════════════════════════"ANSI_COLOR_RESET);
+            puts(BRIGHTGREEN156"═══════════════════════════ Service Room 02 ➡ 💐 Instant ═══════════════════════════"ANSI_COLOR_RESET);
 
             printf(BRIGHTPINK219 ANSI_STYLE_BOLD"(STATUS: USER) Sinkronisasi: %s\n\n"ANSI_COLOR_RESET, SignedInAccountUserName);
             printf(BRIGHTBLUE159"\t\t\t  Selamat Datang di " ANSI_STYLE_BOLD ANSI_STYLE_UNDERLINE"SKYR D'Laundry!"ANSI_COLOR_RESET "\n\t\t\t  " BRIGHTBLUE158 ANSI_STYLE_ITALIC"@PRE-RELEASE V1.0.0; (14/12/2023)\n"ANSI_COLOR_RESET);
@@ -1182,13 +1898,14 @@ int main(void) {
     signed int LoginOption, LoginMode;
     bool UserMode;
 
-    printf("%d\n", ApplicationInLoggedIn);
-    getchar();
+    // printf("%d\n", ApplicationInLoggedIn);
+    // getchar();
+
     if (!ApplicationInLoggedIn) {
         if (FirstRuntimeExecution) {
             MatchSaveFileTxt("./", "-SaveFile");
             for (int i = 0; i < BUFSIZE10; i++) {
-                puts(SaveFilesTxtName[i].FileNames);
+                // puts(SaveFilesTxtName[i].FileNames);
                 if (strlen(SaveFilesTxtName[i].FileNames) != 0) CountLoggedInAccounts++;
                 else break;
             } FirstRuntimeExecution = false;
