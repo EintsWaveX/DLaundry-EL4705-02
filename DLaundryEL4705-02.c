@@ -1,6 +1,6 @@
 #include <assert.h>             // Assertion for truth testing
 #include <ctype.h>              // Characters typing methods
-#include <conio.h>
+#include <conio.h>              // Working on Windows compatibility
 #include <errno.h>              // Error handling
 #include <dirent.h>             // Working with directories and files
 #include <fenv.h>               // File environment handling
@@ -19,7 +19,7 @@
 #include <unistd.h>             // Giving POSIX syntaxes operating system API
 #include <wchar.h>              // Wide character conversion (W type conversion)
 #include <wctype.h>             // Wide character typing method (String type conversion)
-#include <windows.h>
+#include <windows.h>            // Library for Windows specific functions
 
 /*
 DEFINE::BUFFERSIZE
@@ -140,8 +140,9 @@ void ClearScreen(void) {
 #endif
 }
 
-char SignedInAccountFullName[BUFSIZE10], SignedInAccountUserName[BUFSIZE07];
-bool ApplicationInLoggedIn = false, FirstRuntimeExecution = true;
+FILE *SignedInAccountSaveFile;
+char SignedInAccountFullName[BUFSIZE10], SignedInAccountUserName[BUFSIZE07], SignedInAccountAdminCode[BUFSIZE07];
+bool ApplicationInLoggedIn = false, FirstRuntimeExecution = true, VisitedCheckListServiceNo01 = false;
 
 struct UserProfileAccount {
     char FirstName[BUFSIZE07], LastName[BUFSIZE07];
@@ -162,6 +163,17 @@ struct SaveFilesTxtName {
 signed int FilePathNameTraversalCounter = 0, CountSavedFiles = 0;
 signed int Accounts = 0, SignedInAccountNo = 0, CountLoggedInAccounts = 0;
 
+struct SKYRDLaundry {
+    char ServiceOrderNo[BUFSIZE07];
+    signed int Shirt, TShirt, InnerShirt, Socks, Sweater, Jacket, Vest, Mukena;
+    signed int Kebaya, PrayerMat, LongPants, ShortPants, InnerPants, Towel, Skirt, HouseDress;
+    signed int MuslimClothing, Gloves, GownDress, Handkerchief, Veil, Chip, Sarong, Bra;
+} SKYRDLaundryCL;
+signed int CountFilledInLaundries = 0;
+// bool FIlledShirt = false, FIlledTShirt = false, FIlledInnerShirt = false, FIlledSocks = false, FIlledSweater = false, FIlledJacket = false, FIlledVest = false, FIlledMukena = false;
+// bool FilledKebaya = false, FilledPrayerMat = false, FilledLongPants = false, FilledShortPants = false, FilledInnerPants = false, FilledTowel = false, FilledSkirt = false, FilledHouseDress = false;
+// bool FilledMuslimClothing = false, FilledGloves = false, FilledGownDress = false, FilledHandkerchief = false, FilledVeil = false, FilledChip = false, FilledSarong = false, FilledBra = false;
+
 int  main(void);
 void AccountRegistrationMenu(bool);
 void AccountLoginMenu(bool);
@@ -170,7 +182,12 @@ void HomePageMenu(bool);
 void ServicesNo01(signed int);
 void ServicesNo02(signed int);
 void ServicesNo03(signed int);
-void OtherServices(void);
+void OtherServices(bool);
+void TopUpBalance(void);
+void DepositService(void);
+void HistoryService(void);
+void CalculatorService(void);
+void AccountLogoutMenu(bool);
 
 void EncryptTxtFile(const char*, const char*, int, bool);
 void DecryptTxtFile(const char*, bool, int, char ReadDecryptedKeyString[BUFSIZE16]);
@@ -477,7 +494,7 @@ void AccountRegistrationMenu(bool UserMode) {
         AdminProfileAccounts.Birthday[strlen(AdminProfileAccounts.Birthday) - 1]       = '\0';
         AdminProfileAccounts.PhoneNumber[strlen(AdminProfileAccounts.PhoneNumber) - 1] = '\0';
         AdminProfileAccounts.Sex[strlen(AdminProfileAccounts.Sex) - 1]                 = '\0';
-        AdminProfileAccounts.AdminCode[strlen(AdminProfileAccounts.AdminCode) - 1]                 = '\0';
+        AdminProfileAccounts.AdminCode[strlen(AdminProfileAccounts.AdminCode) - 1]     = '\0';
 
         puts(ANSI_COLOR_RESET"");
         fwrite(&AdminProfileAccounts, sizeof(AdminProfileAccounts), 1, RegisteredAdmins);
@@ -505,89 +522,137 @@ void AccountLoginMenu(bool UserMode) {
     char Email[BUFSIZE07], Username[BUFSIZE07], Password[BUFSIZE07], AdminCode[BUFSIZE07];
     char GeneratingSaveFile[BUFSIZE07];
 
-    if (!ApplicationInLoggedIn) { NULL; }
-    else { main(); }
+    if (!ApplicationInLoggedIn) {
+        ClearScreen(); fflush(stdin);
+        puts(BRIGHTGREEN154"══════════════════════════════════ SKYR D'Laundry ══════════════════════════════════"ANSI_COLOR_RESET);
+        puts(BRIGHTGREEN156"═════════════════════════════ Starting In :: Logging In ════════════════════════════"ANSI_COLOR_RESET);
+        
+        puts("");
+        puts(BRIGHTBLUE159"\t\t\t  Selamat Datang di " ANSI_STYLE_BOLD ANSI_STYLE_UNDERLINE"SKYR D'Laundry"ANSI_COLOR_RESET BRIGHTBLUE158"!\n     Silakan " ANSI_STYLE_UNDERLINE"PILIH dan MASUKKAN"ANSI_COLOR_RESET BRIGHTBLUE158" akun untuk " ANSI_STYLE_ITALIC"(signing in/login) "ANSI_COLOR_RESET BRIGHTBLUE158"terlebih dahulu..."ANSI_COLOR_RESET);
 
-    ClearScreen(); fflush(stdin);
-    puts(BRIGHTGREEN154"══════════════════════════════════ SKYR D'Laundry ══════════════════════════════════"ANSI_COLOR_RESET);
-    puts(BRIGHTGREEN156"═════════════════════════════ Starting In :: Logging In ════════════════════════════"ANSI_COLOR_RESET);
-    
-    puts("");
-    puts(BRIGHTBLUE159"\t\t\t  Selamat Datang di " ANSI_STYLE_BOLD ANSI_STYLE_UNDERLINE"SKYR D'Laundry"ANSI_COLOR_RESET BRIGHTBLUE158"!\n     Silakan " ANSI_STYLE_UNDERLINE"PILIH dan MASUKKAN"ANSI_COLOR_RESET BRIGHTBLUE158" akun untuk " ANSI_STYLE_ITALIC"(signing in/login) "ANSI_COLOR_RESET BRIGHTBLUE158"terlebih dahulu..."ANSI_COLOR_RESET);
+        if (UserMode == USER) {
+            puts("");
+            printf(BRIGHTBLUE158 ANSI_STYLE_ITALIC"(Email)        "ANSI_COLOR_RESET BRIGHTBLUE158"Email:         "); fgets(Email, BUFSIZE07, stdin);
+            printf(BRIGHTBLUE158 ANSI_STYLE_ITALIC"(Username)     "ANSI_COLOR_RESET BRIGHTBLUE158"Nama Pengguna: "); fgets(Username, BUFSIZE07, stdin);
+            printf(BRIGHTBLUE158 ANSI_STYLE_ITALIC"(Password)     "ANSI_COLOR_RESET BRIGHTBLUE158"Kata Sandi:    "); fgets(Password, BUFSIZE07, stdin);
+
+            Email[strlen(Email) - 1]       = '\0';
+            Username[strlen(Username) - 1] = '\0';
+            Password[strlen(Password) - 1] = '\0';
+
+            RegisteredUsers = fopen("RegisteredUsers.dat", "rb");
+            while (fread(&UserProfileAccounts, sizeof(UserProfileAccounts), 1, RegisteredUsers) == 1) {
+                if (strncmp(UserProfileAccounts.Email, Email, BUFSIZE07) == 0 && strncmp(UserProfileAccounts.Username, Username, BUFSIZE07) == 0 && strncmp(UserProfileAccounts.Password, Password, BUFSIZE07) == 0) {
+                    ApplicationInLoggedIn = true;
+                    strncpy(SignedInAccountFullName, UserProfileAccounts.FirstName, BUFSIZE09); strncat(SignedInAccountFullName, UserProfileAccounts.LastName, BUFSIZE09);
+                    strncpy(SignedInAccountUserName, UserProfileAccounts.Username, BUFSIZE07);
+                    strncpy(GeneratingSaveFile, SignedInAccountUserName, BUFSIZE07); strcat(GeneratingSaveFile, "-USER-SaveFile.dat");
+
+                    RegisteredUserSaveFile = fopen(GeneratingSaveFile, "wb");
+                    fwrite(&UserProfileAccounts, sizeof(UserProfileAccounts), 1, RegisteredUserSaveFile);
+                    
+                    ClearScreen(); fflush(stdin);
+                    puts(BRIGHTGREEN154"══════════════════════════════════ SKYR D'Laundry ══════════════════════════════════"ANSI_COLOR_RESET);
+                    puts(BRIGHTGREEN156"═════════════════════════════ Starting In :: Logging In ════════════════════════════"ANSI_COLOR_RESET);
+                    
+                    puts("");
+                    printf(BRIGHTBLUE159"\t\tSelamat Datang di " ANSI_STYLE_BOLD ANSI_STYLE_UNDERLINE"SKYR D'Laundry"ANSI_COLOR_RESET BRIGHTBLUE159", pengguna atas nama:\n\n\t\t"ANSI_COLOR_RESET BRIGHTBLUE158 ANSI_STYLE_ITALIC"> (Full Name) "ANSI_COLOR_RESET BRIGHTBLUE158"Nama Lengkap:  " ANSI_STYLE_BOLD ANSI_STYLE_UNDERLINE"%s\n\t\t"ANSI_COLOR_RESET BRIGHTBLUE158 ANSI_STYLE_ITALIC"> (User Name) "ANSI_COLOR_RESET BRIGHTBLUE158"Nama Pengguna: " ANSI_STYLE_BOLD ANSI_STYLE_UNDERLINE"%s\n\t\t\n"ANSI_COLOR_RESET, SignedInAccountFullName, SignedInAccountUserName);
+                    
+                    getchar();
+                    fclose(RegisteredUserSaveFile); fclose(RegisteredUsers);
+                    SignedInAccountSaveFile = fopen(GeneratingSaveFile, "ab");
+                    HomePageMenu(USER);
+                }
+            } fclose(RegisteredUsers);
+            AccountLoginMenu(USER);
+
+        } else {
+            puts("");
+            printf(BRIGHTBLUE158 ANSI_STYLE_ITALIC"(Email)        "ANSI_COLOR_RESET BRIGHTBLUE158"Email:         "); fgets(Email, BUFSIZE07, stdin);
+            printf(BRIGHTBLUE158 ANSI_STYLE_ITALIC"(Username)     "ANSI_COLOR_RESET BRIGHTBLUE158"Nama Pengguna: "); fgets(Username, BUFSIZE07, stdin);
+            printf(BRIGHTBLUE158 ANSI_STYLE_ITALIC"(Password)     "ANSI_COLOR_RESET BRIGHTBLUE158"Kata Sandi:    "); fgets(Password, BUFSIZE07, stdin);
+
+            puts("");
+            printf(BRIGHTBLUE159 ANSI_STYLE_ITALIC"(Admin Code)   "ANSI_COLOR_RESET BRIGHTBLUE159"Kode Admin:    "); fgets(AdminCode, BUFSIZE07, stdin);
+
+            Email[strlen(Email) - 1]         = '\0';
+            Username[strlen(Username) - 1]   = '\0';
+            Password[strlen(Password) - 1]   = '\0';
+            AdminCode[strlen(AdminCode) - 1] = '\0';
+
+            RegisteredAdmins = fopen("RegisteredAdmins.dat", "rb");
+            while (fread(&AdminProfileAccounts, sizeof(AdminProfileAccounts), 1, RegisteredAdmins) == 1) {
+                if (strncmp(AdminProfileAccounts.Email, Email, BUFSIZE07) == 0 && strncmp(AdminProfileAccounts.Username, Username, BUFSIZE07) == 0 && strncmp(AdminProfileAccounts.Password, Password, BUFSIZE07) == 0 && strncmp(AdminProfileAccounts.AdminCode, AdminCode, BUFSIZE07) == 0) {
+                    ApplicationInLoggedIn = true;
+                    strncpy(SignedInAccountFullName, AdminProfileAccounts.FirstName, BUFSIZE09); strncat(SignedInAccountFullName, AdminProfileAccounts.LastName, BUFSIZE09);
+                    strncpy(SignedInAccountUserName, AdminProfileAccounts.Username, BUFSIZE07);
+                    strncpy(SignedInAccountAdminCode, AdminProfileAccounts.AdminCode, BUFSIZE07);
+                    strncpy(GeneratingSaveFile, SignedInAccountAdminCode, BUFSIZE07); strcat(GeneratingSaveFile, "-ADMIN-SaveFile.dat");
+
+                    RegisteredAdminSaveFile = fopen(GeneratingSaveFile, "wb");
+                    fwrite(&AdminProfileAccounts, sizeof(AdminProfileAccounts), 1, RegisteredAdminSaveFile);
+                    
+                    ClearScreen(); fflush(stdin);
+                    puts(BRIGHTGREEN154"══════════════════════════════════ SKYR D'Laundry ══════════════════════════════════"ANSI_COLOR_RESET);
+                    puts(BRIGHTGREEN156"═════════════════════════════ Starting In :: Logging In ════════════════════════════"ANSI_COLOR_RESET);
+                    
+                    puts("");
+                    printf(BRIGHTBLUE159"\t\tSelamat Datang di " ANSI_STYLE_BOLD ANSI_STYLE_UNDERLINE"SKYR D'Laundry"ANSI_COLOR_RESET BRIGHTBLUE159", operator atas nama:\n\n\t\t"ANSI_COLOR_RESET BRIGHTBLUE158 ANSI_STYLE_ITALIC"> (Full Name)  "ANSI_COLOR_RESET BRIGHTBLUE158"Nama Lengkap:  " ANSI_STYLE_BOLD ANSI_STYLE_UNDERLINE"%s\n\t\t"ANSI_COLOR_RESET BRIGHTBLUE158 ANSI_STYLE_ITALIC"> (User Name)  "ANSI_COLOR_RESET BRIGHTBLUE158"Nama Pengguna: " ANSI_STYLE_BOLD ANSI_STYLE_UNDERLINE"%s\n\t\t"ANSI_COLOR_RESET BRIGHTBLUE158 ANSI_STYLE_ITALIC"> (Admin Code) "ANSI_COLOR_RESET BRIGHTBLUE158"Kode Admin:    " ANSI_STYLE_BOLD ANSI_STYLE_UNDERLINE"%s\n\t\t\n"ANSI_COLOR_RESET, SignedInAccountFullName, SignedInAccountUserName, AdminProfileAccounts.AdminCode);
+                    
+                    getchar();
+                    fclose(RegisteredAdminSaveFile); fclose(RegisteredAdmins);
+                    SignedInAccountSaveFile = fopen(GeneratingSaveFile, "ab");
+                    HomePageMenu(ADMIN);
+                }
+            } fclose(RegisteredAdmins);
+            AccountLoginMenu(ADMIN);
+        }
+
+    } else { main(); }
+}
+
+void AccountLogoutMenu(bool UserMode) {
+    char CheckLoggedInAccount[BUFSIZE07];
 
     if (UserMode == USER) {
-        puts("");
-        printf(BRIGHTBLUE158 ANSI_STYLE_ITALIC"(Email)        "ANSI_COLOR_RESET BRIGHTBLUE158"Email:         "); fgets(Email, BUFSIZE07, stdin);
-        printf(BRIGHTBLUE158 ANSI_STYLE_ITALIC"(Username)     "ANSI_COLOR_RESET BRIGHTBLUE158"Nama Pengguna: "); fgets(Username, BUFSIZE07, stdin);
-        printf(BRIGHTBLUE158 ANSI_STYLE_ITALIC"(Password)     "ANSI_COLOR_RESET BRIGHTBLUE158"Kata Sandi:    "); fgets(Password, BUFSIZE07, stdin);
-
-        Email[strlen(Email) - 1]       = '\0';
-        Username[strlen(Username) - 1] = '\0';
-        Password[strlen(Password) - 1] = '\0';
-
-        RegisteredUsers = fopen("RegisteredUsers.dat", "rb");
-        while (fread(&UserProfileAccounts, sizeof(UserProfileAccounts), 1, RegisteredUsers) == 1) {
-            if (strncmp(UserProfileAccounts.Email, Email, BUFSIZE07) == 0 && strncmp(UserProfileAccounts.Username, Username, BUFSIZE07) == 0 && strncmp(UserProfileAccounts.Password, Password, BUFSIZE07) == 0) {
-                ApplicationInLoggedIn = true;
-                strncpy(SignedInAccountFullName, UserProfileAccounts.FirstName, BUFSIZE09); strncat(SignedInAccountFullName, UserProfileAccounts.LastName, BUFSIZE09);
-                strncpy(SignedInAccountUserName, UserProfileAccounts.Username, BUFSIZE07);
-                strcpy(GeneratingSaveFile, SignedInAccountUserName); strcat(GeneratingSaveFile, "-USER-SaveFile.dat");
-
-                RegisteredUserSaveFile = fopen(GeneratingSaveFile, "wb");
-                fwrite(&UserProfileAccounts, sizeof(UserProfileAccounts), 1, RegisteredUserSaveFile);
-                
+        if (strlen(SignedInAccountFullName) != 0 && strlen(SignedInAccountUserName) != 0 && strlen(SignedInAccountAdminCode) == 0) {
+            strcpy(CheckLoggedInAccount, SignedInAccountUserName); strcat(CheckLoggedInAccount, "-USER-SaveFile.dat");
+            
+            if (access(CheckLoggedInAccount, F_OK) == 0) {
                 ClearScreen(); fflush(stdin);
                 puts(BRIGHTGREEN154"══════════════════════════════════ SKYR D'Laundry ══════════════════════════════════"ANSI_COLOR_RESET);
-                puts(BRIGHTGREEN156"═════════════════════════════ Starting In :: Logging In ════════════════════════════"ANSI_COLOR_RESET);
-                
+                puts(BRIGHTGREEN156"════════════════════════════ Starting Out :: Logging Out ═══════════════════════════"ANSI_COLOR_RESET);
+
                 puts("");
-                printf(BRIGHTBLUE159"\t\tSelamat Datang di " ANSI_STYLE_BOLD ANSI_STYLE_UNDERLINE"SKYR D'Laundry"ANSI_COLOR_RESET BRIGHTBLUE159", pengguna atas nama:\n\n\t\t"ANSI_COLOR_RESET BRIGHTBLUE158 ANSI_STYLE_ITALIC"> (Full Name) "ANSI_COLOR_RESET BRIGHTBLUE158"Nama Lengkap:  " ANSI_STYLE_BOLD ANSI_STYLE_UNDERLINE"%s\n\t\t"ANSI_COLOR_RESET BRIGHTBLUE158 ANSI_STYLE_ITALIC"> (User Name) "ANSI_COLOR_RESET BRIGHTBLUE158"Nama Pengguna: " ANSI_STYLE_BOLD ANSI_STYLE_UNDERLINE"%s\n\t\t\n"ANSI_COLOR_RESET, SignedInAccountFullName, SignedInAccountUserName);
-                
-                getchar();
-                fclose(RegisteredUserSaveFile); fclose(RegisteredUsers);
-                HomePageMenu(USER);
+                printf(BRIGHTMAGENTA217 ANSI_STYLE_BOLD"  Anda telah berhasil logout dari aplikasi " ANSI_STYLE_UNDERLINE"SKYR D'Laundry"ANSI_COLOR_RESET BRIGHTMAGENTA217 ANSI_STYLE_BOLD", dengan profil pengguna:\n\n\t"ANSI_COLOR_RESET BRIGHTPINK219 ANSI_STYLE_BOLD ANSI_STYLE_ITALIC"> (Full Name)  "ANSI_COLOR_RESET BRIGHTPINK219 ANSI_STYLE_BOLD"Nama Lengkap:  " ANSI_STYLE_UNDERLINE"%s\n\t"ANSI_COLOR_RESET BRIGHTPINK219 ANSI_STYLE_BOLD ANSI_STYLE_ITALIC"> (User Name)  "ANSI_COLOR_RESET BRIGHTPINK219 ANSI_STYLE_BOLD"Nama Pengguna: " ANSI_STYLE_UNDERLINE"%s\n\n"ANSI_COLOR_RESET, SignedInAccountFullName, SignedInAccountUserName);
+                puts(BRIGHTBLUE159"\t\t     Sampai Bertemu Kembali, di " ANSI_STYLE_BOLD ANSI_STYLE_UNDERLINE"SKYR D'Laundry"ANSI_COLOR_RESET BRIGHTBLUE158"!\n"ANSI_COLOR_RESET);
+
+                SignedInAccountFullName[0] = 0; SignedInAccountUserName[0] = 0;
+                ApplicationInLoggedIn = false;
+                fclose(SignedInAccountSaveFile);
+                getchar(); main();
             }
-        } fclose(RegisteredUsers);
-        AccountLoginMenu(USER);
+        }
 
     } else {
-        puts("");
-        printf(BRIGHTBLUE158 ANSI_STYLE_ITALIC"(Email)        "ANSI_COLOR_RESET BRIGHTBLUE158"Email:         "); fgets(Email, BUFSIZE07, stdin);
-        printf(BRIGHTBLUE158 ANSI_STYLE_ITALIC"(Username)     "ANSI_COLOR_RESET BRIGHTBLUE158"Nama Pengguna: "); fgets(Username, BUFSIZE07, stdin);
-        printf(BRIGHTBLUE158 ANSI_STYLE_ITALIC"(Password)     "ANSI_COLOR_RESET BRIGHTBLUE158"Kata Sandi:    "); fgets(Password, BUFSIZE07, stdin);
-
-        puts("");
-        printf(BRIGHTBLUE159 ANSI_STYLE_ITALIC"(Admin Code)   "ANSI_COLOR_RESET BRIGHTBLUE159"Kode Admin:    "); fgets(AdminCode, BUFSIZE07, stdin);
-
-        Email[strlen(Email) - 1]         = '\0';
-        Username[strlen(Username) - 1]   = '\0';
-        Password[strlen(Password) - 1]   = '\0';
-        AdminCode[strlen(AdminCode) - 1] = '\0';
-
-        RegisteredAdmins = fopen("RegisteredAdmins.dat", "rb");
-        while (fread(&AdminProfileAccounts, sizeof(AdminProfileAccounts), 1, RegisteredAdmins) == 1) {
-            if (strncmp(AdminProfileAccounts.Email, Email, BUFSIZE07) == 0 && strncmp(AdminProfileAccounts.Username, Username, BUFSIZE07) == 0 && strncmp(AdminProfileAccounts.Password, Password, BUFSIZE07) == 0 && strncmp(AdminProfileAccounts.AdminCode, AdminCode, BUFSIZE07) == 0) {
-                ApplicationInLoggedIn = true;
-                strncpy(SignedInAccountFullName, AdminProfileAccounts.FirstName, BUFSIZE09); strncat(SignedInAccountFullName, AdminProfileAccounts.LastName, BUFSIZE09);
-                strncpy(SignedInAccountUserName, AdminProfileAccounts.Username, BUFSIZE07);
-                strcpy(GeneratingSaveFile, SignedInAccountUserName); strcat(GeneratingSaveFile, "-ADMIN-SaveFile.dat");
-
-                RegisteredAdminSaveFile = fopen(GeneratingSaveFile, "wb");
-                fwrite(&AdminProfileAccounts, sizeof(AdminProfileAccounts), 1, RegisteredAdminSaveFile);
-                
+        if (strlen(SignedInAccountFullName) != 0 && strlen(SignedInAccountUserName) != 0 && strlen(SignedInAccountAdminCode) != 0) {
+            strcpy(CheckLoggedInAccount, SignedInAccountUserName); strcat(CheckLoggedInAccount, "-ADMIN-SaveFile.dat");
+            
+            if (access(CheckLoggedInAccount, F_OK) == 0) {
                 ClearScreen(); fflush(stdin);
                 puts(BRIGHTGREEN154"══════════════════════════════════ SKYR D'Laundry ══════════════════════════════════"ANSI_COLOR_RESET);
-                puts(BRIGHTGREEN156"═════════════════════════════ Starting In :: Logging In ════════════════════════════"ANSI_COLOR_RESET);
-                
+                puts(BRIGHTGREEN156"════════════════════════════ Starting Out :: Logging Out ═══════════════════════════"ANSI_COLOR_RESET);
+
                 puts("");
-                printf(BRIGHTBLUE159"\t\tSelamat Datang di " ANSI_STYLE_BOLD ANSI_STYLE_UNDERLINE"SKYR D'Laundry"ANSI_COLOR_RESET BRIGHTBLUE159", operator atas nama:\n\n\t\t"ANSI_COLOR_RESET BRIGHTBLUE158 ANSI_STYLE_ITALIC"> (Full Name)  "ANSI_COLOR_RESET BRIGHTBLUE158"Nama Lengkap:  " ANSI_STYLE_BOLD ANSI_STYLE_UNDERLINE"%s\n\t\t"ANSI_COLOR_RESET BRIGHTBLUE158 ANSI_STYLE_ITALIC"> (User Name)  "ANSI_COLOR_RESET BRIGHTBLUE158"Nama Pengguna: " ANSI_STYLE_BOLD ANSI_STYLE_UNDERLINE"%s\n\t\t"ANSI_COLOR_RESET BRIGHTBLUE158 ANSI_STYLE_ITALIC"> (Admin Code) "ANSI_COLOR_RESET BRIGHTBLUE158"Kode Admin:    " ANSI_STYLE_BOLD ANSI_STYLE_UNDERLINE"%s\n\t\t\n"ANSI_COLOR_RESET, SignedInAccountFullName, SignedInAccountUserName, AdminProfileAccounts.AdminCode);
-                
-                getchar();
-                fclose(RegisteredAdminSaveFile); fclose(RegisteredAdmins);
-                HomePageMenu(ADMIN);
+                printf(BRIGHTMAGENTA217 ANSI_STYLE_BOLD"  Anda telah berhasil logout dari aplikasi " ANSI_STYLE_UNDERLINE"SKYR D'Laundry"ANSI_COLOR_RESET BRIGHTMAGENTA217 ANSI_STYLE_BOLD", dengan profil operator:\n\n\t"ANSI_COLOR_RESET BRIGHTPINK219 ANSI_STYLE_BOLD ANSI_STYLE_ITALIC"> (Full Name)  "ANSI_COLOR_RESET BRIGHTPINK219 ANSI_STYLE_BOLD"Nama Lengkap:  " ANSI_STYLE_UNDERLINE"%s\n\t"ANSI_COLOR_RESET BRIGHTPINK219 ANSI_STYLE_BOLD ANSI_STYLE_ITALIC"> (User Name)  "ANSI_COLOR_RESET BRIGHTPINK219 ANSI_STYLE_BOLD"Nama Pengguna: " ANSI_STYLE_UNDERLINE"%s\n\n"ANSI_COLOR_RESET BRIGHTPINK219 ANSI_STYLE_BOLD ANSI_STYLE_ITALIC"> (Admin Code) "ANSI_COLOR_RESET BRIGHTPINK219 ANSI_STYLE_BOLD"Kode Admin:    " ANSI_STYLE_UNDERLINE"%s\n\n"ANSI_COLOR_RESET, SignedInAccountFullName, SignedInAccountUserName, SignedInAccountAdminCode);
+                puts(BRIGHTBLUE159"\t\t     Sampai Bertemu Kembali, di " ANSI_STYLE_BOLD ANSI_STYLE_UNDERLINE"SKYR D'Laundry"ANSI_COLOR_RESET BRIGHTBLUE158"!\n"ANSI_COLOR_RESET);
+
+                SignedInAccountFullName[0] = 0; SignedInAccountUserName[0] = 0; SignedInAccountAdminCode[0] = 0;
+                ApplicationInLoggedIn = false;
+                fclose(SignedInAccountSaveFile);
+                getchar(); main();
             }
-        } fclose(RegisteredAdmins);
-        AccountLoginMenu(ADMIN);
+        }
     }
 }
 
@@ -603,7 +668,7 @@ void HomePageMenu(bool UserMode) {
             puts(BRIGHTGREEN156 ANSI_STYLE_BOLD"══════════════════════════════════ Home Page Menu ══════════════════════════════════"ANSI_COLOR_RESET);
 
             printf(BRIGHTPINK219 ANSI_STYLE_BOLD"(STATUS: USER) Sinkronisasi: %s\n\n"ANSI_COLOR_RESET, SignedInAccountUserName);
-            printf(BRIGHTBLUE159"\t\t\t  Selamat Datang di " ANSI_STYLE_BOLD ANSI_STYLE_UNDERLINE"SKYR D'Laundry!"ANSI_COLOR_RESET "\n\t\t\t  " BRIGHTBLUE158 ANSI_STYLE_ITALIC"@PRE-RELEASE V1.0.0; (14/12/2023)\n\n\t\t  "ANSI_COLOR_RESET BRIGHTMAGENTA217 ANSI_STYLE_BOLD"Layanan apakah yang ingin Anda kunjungi saat ini?\n"ANSI_COLOR_RESET, SignedInAccountUserName);
+            printf(BRIGHTBLUE159"\t\t\t  Selamat Datang di " ANSI_STYLE_BOLD ANSI_STYLE_UNDERLINE"SKYR D'Laundry!"ANSI_COLOR_RESET "\n\t\t\t  " BRIGHTBLUE158 ANSI_STYLE_ITALIC"@PRE-RELEASE V1.0.0; (14/12/2023)\n\n\t\t  "ANSI_COLOR_RESET BRIGHTMAGENTA217 ANSI_STYLE_BOLD"Layanan apakah yang ingin Anda kunjungi saat ini?\n"ANSI_COLOR_RESET);
 
             puts("");
             puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"═════════════════════════════ CUCI KILOAN (per. kg) ════════════════════════════════"ANSI_COLOR_RESET);
@@ -623,6 +688,7 @@ void HomePageMenu(bool UserMode) {
             puts(BRIGHTRED216"[99] ・‥…━━━★ Pilihan Lainnya ☆.。.:*            ⏩ (Top Up Saldo, dll)          😆"ANSI_COLOR_RESET);
             puts(BRIGHTPINK219"\nCatatan:\n*TAMBAHAN ➡ (biaya dapat bervariasi, tergantung merk barang)");
             
+            puts("");
             printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &ServiceOption); fflush(stdin);
         } while (ValidIntInput == 0);
 
@@ -636,143 +702,609 @@ void HomePageMenu(bool UserMode) {
             case 7: ServicesNo02(7); break;
             case 8: ServicesNo03(8); break;
             case 9: ServicesNo03(9); break;
-            case 99: OtherServices(); break;
+            case 99: OtherServices(USER); break;
             default: HomePageMenu(USER); break;
+        }
+
+    } else {
+        ClearScreen();
+        puts(BRIGHTGREEN154"══════════════════════════════════ SKYR D'Laundry ══════════════════════════════════"ANSI_COLOR_RESET);
+        puts(BRIGHTGREEN155"═════════════════════════════ In Progress :: Dashboard ═════════════════════════════"ANSI_COLOR_RESET);
+        puts(BRIGHTGREEN156 ANSI_STYLE_BOLD"══════════════════════════════════ Home Page Menu ══════════════════════════════════"ANSI_COLOR_RESET);
+
+        printf(BRIGHTPINK219 ANSI_STYLE_BOLD"(STATUS: ADMIN) Sinkronisasi: %s-%s\n\n"ANSI_COLOR_RESET, SignedInAccountUserName, SignedInAccountAdminCode);
+        printf(BRIGHTBLUE159"\t\t\t  Selamat Datang di " ANSI_STYLE_BOLD ANSI_STYLE_UNDERLINE"SKYR D'Laundry!"ANSI_COLOR_RESET "\n\t\t\t  " BRIGHTBLUE158 ANSI_STYLE_ITALIC"@PRE-RELEASE V1.0.0; (14/12/2023)\n\n\t\t  "ANSI_COLOR_RESET BRIGHTMAGENTA217 ANSI_STYLE_BOLD"Layanan apakah yang ingin Anda kunjungi saat ini?\n"ANSI_COLOR_RESET);
+        getchar();
+        HomePageMenu();
+    }
+}
+
+void ServicesNo01(signed int ServiceOption) {
+    int ValidIntInput;
+    signed int CheckListOn, AmountOfLaundries = 0;
+
+    if (ServiceOption == 1) {
+        do {
+            ClearScreen();
+            puts(BRIGHTGREEN154"══════════════════════════════════ SKYR D'Laundry ══════════════════════════════════"ANSI_COLOR_RESET);
+            puts(BRIGHTGREEN155"══════════════════════════════ In Progress :: Service ══════════════════════════════"ANSI_COLOR_RESET);
+            puts(BRIGHTGREEN156"═══════════════════════════ Service Room 01 ➡ 💐 Regular ═══════════════════════════"ANSI_COLOR_RESET);
+
+            printf(BRIGHTPINK219 ANSI_STYLE_BOLD"(STATUS: USER) Sinkronisasi: %s\n\n"ANSI_COLOR_RESET, SignedInAccountUserName);
+            printf(BRIGHTBLUE159"\t\t\t  Selamat Datang di " ANSI_STYLE_BOLD ANSI_STYLE_UNDERLINE"SKYR D'Laundry!"ANSI_COLOR_RESET "\n\t\t\t  " BRIGHTBLUE158 ANSI_STYLE_ITALIC"@PRE-RELEASE V1.0.0; (14/12/2023)\n"ANSI_COLOR_RESET);
+
+            puts("");
+            puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"═════════════════════════════ CUCI KILOAN (per. kg) ════════════════════════════════"ANSI_COLOR_RESET);
+            puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"════════════════════════════ DAFTAR CEK-LIST PAKAIAN ═══════════════════════════════"ANSI_COLOR_RESET);
+            puts(BRIGHTPURPLE213 ANSI_STYLE_BOLD"Asertif Banyak Tipe Pakaian: 24 Tipe (per. 8 baris, 3 kolom)\n");
+            puts(BRIGHTRED209 ANSI_STYLE_BOLD"Catatan: (akumulasi banyak pakaian akan ditimbang untuk dihitung massa total"ANSI_COLOR_RESET);
+            puts(BRIGHTRED209 ANSI_STYLE_BOLD"         pakaian dari yang memesan layanan D'Laundry dalam format: Rp6.000,00/kg)."ANSI_COLOR_RESET);
+
+            puts("");
+            puts(BRIGHTMAGENTA210"[01] Kaos           [09] Kebaya             [17] Baju Muslim"ANSI_COLOR_RESET);
+            puts(BRIGHTMAGENTA210"[02] Kemeja         [10] Sajadah            [18] Sarung Tangan"ANSI_COLOR_RESET);
+            puts(BRIGHTMAGENTA210"[03] Kaos Dalam     [11] Celana Panjang     [19] Gaun"ANSI_COLOR_RESET);
+            puts(BRIGHTMAGENTA210"[04] Kaos Kaki      [12] Celana Pendek      [20] Sapu Tangan"ANSI_COLOR_RESET);
+            puts(BRIGHTMAGENTA210"[05] Sweater        [13] Celana Dalam       [21] Kerudung"ANSI_COLOR_RESET);
+            puts(BRIGHTMAGENTA210"[06] Jaket          [14] Handuk             [22] Ciput"ANSI_COLOR_RESET);
+            puts(BRIGHTMAGENTA210"[07] Rompi          [15] Rok                [23] Sarung"ANSI_COLOR_RESET);
+            puts(BRIGHTMAGENTA210"[08] Mukena         [16] Daster             [24] Bra"ANSI_COLOR_RESET);
+            puts(BRIGHTRED216 ANSI_STYLE_BOLD ANSI_STYLE_ITALIC"➡ Ketik [0] untuk kembali ke menu utama program... ."ANSI_COLOR_RESET);
+            puts(BRIGHTGREEN156 ANSI_STYLE_BOLD ANSI_STYLE_ITALIC"➡ Ketik [99] untuk mengkonfirmasi isi laundry... ."ANSI_COLOR_RESET);
+
+            puts("");
+            printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &CheckListOn); fflush(stdin);
+        } while (ValidIntInput == 0);
+
+        switch (CheckListOn) {
+            case 0:
+                HomePageMenu(USER); break;
+            
+            /* NOTE: First 8 rows and first column... */
+            case 1:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Shirt)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Kaos\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.Shirt = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.Shirt = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 2:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(T-Shirt)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Kemeja\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.TShirt = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.TShirt = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 3:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Inner Shirt)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Kaos Dalam\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.InnerShirt = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.InnerShirt = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 4:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Socks)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Kaos Kaki\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.Socks = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.Socks = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 5:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Sweater)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Switer\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.Sweater = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.Sweater = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 6:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Jacket)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Jaket\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.Jacket = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.Jacket = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 7:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Vest)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Rompi\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.Vest = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.Vest = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 8:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Mukena)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Mukena\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.Mukena = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.Mukena = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            
+            /* NOTE: Second 8 rows and second column... */
+            case 9:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Kebaya)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Kebaya\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.Kebaya = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.Kebaya = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 10:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Prayer Mat)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Sajadah\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.PrayerMat = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.PrayerMat = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 11:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Long Pants)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Celana Panjang\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.LongPants = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.LongPants = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 12:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Short Pants)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Celana Pendek\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.ShortPants = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.ShortPants = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 13:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Inner Pants)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Celana Dalam\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.InnerPants = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.InnerPants = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 14:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Towel)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Handuk\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.Towel = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.Towel = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 15:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Skirt)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Rok\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.Skirt = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.Skirt = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 16:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(House Dress)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Daster\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.HouseDress = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.HouseDress = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            
+            /* NOTE: Third 8 rows and third column... */
+            case 17:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Muslim Clothing)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Baju Muslim\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.MuslimClothing = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.MuslimClothing = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 18:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Gloves)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Sarung Tangan\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.Gloves = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.Gloves = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 19:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Gown Dress)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Gaun\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.GownDress = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.GownDress = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 20:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Handkerchief)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Sapu Tangan\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.Handkerchief = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.Handkerchief = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 21:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Veil)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Kerudung\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.Veil = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.Veil = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 22:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Chip)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Ciput\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.Chip = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.Chip = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 23:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Sarong)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Sarung\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.Sarong = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.Sarong = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+            case 24:
+                do {
+                    puts("");
+                    puts(BRIGHTPURPLE218 ANSI_STYLE_BOLD"Banyaknya \"" ANSI_STYLE_ITALIC"(Bra)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" Bra\" yang akan diproses dalam layanan D'Laundry?"ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &AmountOfLaundries); fflush(stdin);
+                } while (ValidIntInput == 0);
+                if (AmountOfLaundries != 0) {
+                    SKYRDLaundryCL.Bra = AmountOfLaundries;
+                    (CountFilledInLaundries < 24) ? CountFilledInLaundries++ : 0;
+                } else {
+                    SKYRDLaundryCL.Bra = 0;
+                    (CountFilledInLaundries > 0)  ? CountFilledInLaundries-- : 0;
+                } ServicesNo01(1); break;
+
+            default: ServicesNo01(1); break;
         }
     }
 }
 
-void ServicesNo01(void) {
-
+void ServicesNo02(signed int ServiceOption) {
+    ClearScreen();
+    puts("ServicesNo02();");
+    getchar(); HomePageMenu(USER);
 }
 
-void ServicesNo02(void) {
-
+void ServicesNo03(signed int ServiceOption) {
+    ClearScreen();
+    puts("ServicesNo03();");
+    getchar(); HomePageMenu(USER);
 }
 
-void ServicesNo03(void) {
+void OtherServices(bool UserMode) {
+    int ValidIntInput;
+    signed int OtherServicesOption;
 
+    if (UserMode == USER) {
+        do {
+            ClearScreen();
+            puts(BRIGHTGREEN154"══════════════════════════════════ SKYR D'Laundry ══════════════════════════════════"ANSI_COLOR_RESET);
+            puts(BRIGHTGREEN155"═════════════════════════════ In Progress :: Dashboard ═════════════════════════════"ANSI_COLOR_RESET);
+            puts(BRIGHTGREEN156 ANSI_STYLE_BOLD"══════════════════════════════════ Home Page Menu ══════════════════════════════════"ANSI_COLOR_RESET);
+
+            printf(BRIGHTPINK219 ANSI_STYLE_BOLD"(STATUS: USER) Sinkronisasi: %s\n\n"ANSI_COLOR_RESET, SignedInAccountUserName);
+            printf(BRIGHTBLUE159"\t\t\t  Selamat Datang di " ANSI_STYLE_BOLD ANSI_STYLE_UNDERLINE"SKYR D'Laundry!"ANSI_COLOR_RESET "\n\t\t\t  " BRIGHTBLUE158 ANSI_STYLE_ITALIC"@PRE-RELEASE V1.0.0; (14/12/2023)\n\n\t\t  "ANSI_COLOR_RESET BRIGHTMAGENTA217 ANSI_STYLE_BOLD"Layanan apakah yang ingin Anda kunjungi saat ini?\n"ANSI_COLOR_RESET);
+
+            puts("");
+            puts(BRIGHTRED216 ANSI_STYLE_BOLD"════════════════════════ LAYANAN MENU LAINNYA (UTILITAS) ═══════════════════════════"ANSI_COLOR_RESET);
+            puts(BRIGHTRED216"[1] 🌟 Top-Up Saldo       @SKYRD'Laundry ⏩ (Debit, Kredit, E-Wallet)             😋"ANSI_COLOR_RESET);
+            puts(BRIGHTRED216"[2] 🌹 Layanan Setoran    @SKYRD'Laundry ⏩ (Setoran, Progress, Status)           🤗"ANSI_COLOR_RESET);
+            puts(BRIGHTRED216"[3] 🍀 Layanan Riwayat    @SKYRD'Laundry ⏩ (Riwayat, Umpan Balik)                😇"ANSI_COLOR_RESET);
+            puts(BRIGHTRED216"[4] 💫 Layanan Kalkulator @SKYRD'Laundry ⏩ (Perkiraan Harga, Cek Paket)          🤩"ANSI_COLOR_RESET);
+            puts(BRIGHTBLUE159 ANSI_STYLE_BOLD ANSI_STYLE_ITALIC"➡ Ketik [0] untuk kembali ke menu utama program... ."ANSI_COLOR_RESET);
+            puts(BRIGHTGREEN156 ANSI_STYLE_BOLD ANSI_STYLE_ITALIC"➡ Ketik [99] untuk logout dan/atau menutup program... ."ANSI_COLOR_RESET);
+
+            puts("");
+            printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &OtherServicesOption); fflush(stdin);
+        } while (ValidIntInput == 0);
+
+        switch (OtherServicesOption) {
+            case 0:  HomePageMenu(USER); break;
+            case 1:  TopUpBalance(); break;
+            case 2:  DepositService(); break;
+            case 3:  HistoryService(); break;
+            case 4:  CalculatorService(); break;
+            case 99: AccountLogoutMenu(USER); break;
+            default: OtherServices(USER); break;
+        }
+    }
 }
 
-void OtherServices(void) {
+void TopUpBalance(void) {
+    ClearScreen();
+    puts(BRIGHTGREEN154"══════════════════════════════════ SKYR D'Laundry ══════════════════════════════════"ANSI_COLOR_RESET);
+    puts(BRIGHTGREEN155"═════════════════════ In Progress :: Additional/Other Services ═════════════════════"ANSI_COLOR_RESET);
+    puts(BRIGHTGREEN156 ANSI_STYLE_BOLD"══════════════════════════════════ Top-Up Balance ══════════════════════════════════"ANSI_COLOR_RESET);
 
+    printf(BRIGHTPINK219 ANSI_STYLE_BOLD"(STATUS: USER) Sinkronisasi: %s\n\n"ANSI_COLOR_RESET, SignedInAccountUserName);
+    printf(BRIGHTBLUE159"\t\t\t  Selamat Datang di " ANSI_STYLE_BOLD ANSI_STYLE_UNDERLINE"SKYR D'Laundry!"ANSI_COLOR_RESET "\n\t\t\t  " BRIGHTBLUE158 ANSI_STYLE_ITALIC"@PRE-RELEASE V1.0.0; (14/12/2023)\n\n\t\t  "ANSI_COLOR_RESET BRIGHTMAGENTA217 ANSI_STYLE_BOLD"Layanan apakah yang ingin Anda kunjungi saat ini?\n"ANSI_COLOR_RESET);
+}
+
+void DepositService(void) {
+    ClearScreen();
+    puts(BRIGHTGREEN154"══════════════════════════════════ SKYR D'Laundry ══════════════════════════════════"ANSI_COLOR_RESET);
+    puts(BRIGHTGREEN155"═════════════════════ In Progress :: Additional/Other Services ═════════════════════"ANSI_COLOR_RESET);
+    puts(BRIGHTGREEN156 ANSI_STYLE_BOLD"═════════════════════════════════ Deposit Services ══════════════════════════════════"ANSI_COLOR_RESET);
+
+    printf(BRIGHTPINK219 ANSI_STYLE_BOLD"(STATUS: USER) Sinkronisasi: %s\n\n"ANSI_COLOR_RESET, SignedInAccountUserName);
+    printf(BRIGHTBLUE159"\t\t\t  Selamat Datang di " ANSI_STYLE_BOLD ANSI_STYLE_UNDERLINE"SKYR D'Laundry!"ANSI_COLOR_RESET "\n\t\t\t  " BRIGHTBLUE158 ANSI_STYLE_ITALIC"@PRE-RELEASE V1.0.0; (14/12/2023)\n\n\t\t  "ANSI_COLOR_RESET BRIGHTMAGENTA217 ANSI_STYLE_BOLD"Layanan apakah yang ingin Anda kunjungi saat ini?\n"ANSI_COLOR_RESET);
+}
+
+void HistoryService(void) {
+    ClearScreen();
+    puts(BRIGHTGREEN154"══════════════════════════════════ SKYR D'Laundry ══════════════════════════════════"ANSI_COLOR_RESET);
+    puts(BRIGHTGREEN155"═════════════════════ In Progress :: Additional/Other Services ═════════════════════"ANSI_COLOR_RESET);
+    puts(BRIGHTGREEN156 ANSI_STYLE_BOLD"═════════════════════════════════ History Services ══════════════════════════════════"ANSI_COLOR_RESET);
+
+    printf(BRIGHTPINK219 ANSI_STYLE_BOLD"(STATUS: USER) Sinkronisasi: %s\n\n"ANSI_COLOR_RESET, SignedInAccountUserName);
+    printf(BRIGHTBLUE159"\t\t\t  Selamat Datang di " ANSI_STYLE_BOLD ANSI_STYLE_UNDERLINE"SKYR D'Laundry!"ANSI_COLOR_RESET "\n\t\t\t  " BRIGHTBLUE158 ANSI_STYLE_ITALIC"@PRE-RELEASE V1.0.0; (14/12/2023)\n\n\t\t  "ANSI_COLOR_RESET BRIGHTMAGENTA217 ANSI_STYLE_BOLD"Layanan apakah yang ingin Anda kunjungi saat ini?\n"ANSI_COLOR_RESET);
+}
+
+void CalculatorService(void) {
+    ClearScreen();
+    puts(BRIGHTGREEN154"══════════════════════════════════ SKYR D'Laundry ══════════════════════════════════"ANSI_COLOR_RESET);
+    puts(BRIGHTGREEN155"═════════════════════ In Progress :: Additional/Other Services ═════════════════════"ANSI_COLOR_RESET);
+    puts(BRIGHTGREEN156 ANSI_STYLE_BOLD"═══════════════════════════════ Calculator* Services ══════════════════════════════════"ANSI_COLOR_RESET);
+
+    printf(BRIGHTPINK219 ANSI_STYLE_BOLD"(STATUS: USER) Sinkronisasi: %s\n\n"ANSI_COLOR_RESET, SignedInAccountUserName);
+    printf(BRIGHTBLUE159"\t\t\t  Selamat Datang di " ANSI_STYLE_BOLD ANSI_STYLE_UNDERLINE"SKYR D'Laundry!"ANSI_COLOR_RESET "\n\t\t\t  " BRIGHTBLUE158 ANSI_STYLE_ITALIC"@PRE-RELEASE V1.0.0; (14/12/2023)\n\n\t\t  "ANSI_COLOR_RESET BRIGHTMAGENTA217 ANSI_STYLE_BOLD"Layanan apakah yang ingin Anda kunjungi saat ini?\n"ANSI_COLOR_RESET);
 }
 
 int main(void) {
     SetConsoleOutputCP(65001);
+
+    char USERCheckLoggedInAccount[BUFSIZE07], ADMINCheckLoggedInAccount[BUFSIZE07];
     int ValidIntInput = 0;
     signed int LoginOption, LoginMode;
+    bool UserMode;
 
-    if (FirstRuntimeExecution) {
-        MatchSaveFileTxt("./", "-SaveFile");
-        for (int i = 0; i < BUFSIZE10; i++) {
-            puts(SaveFilesTxtName[i].FileNames);
-            if (strlen(SaveFilesTxtName[i].FileNames) != 0) CountLoggedInAccounts++;
-            else break;
-        } FirstRuntimeExecution = false;
-    }
+    printf("%d\n", ApplicationInLoggedIn);
+    getchar();
+    if (!ApplicationInLoggedIn) {
+        if (FirstRuntimeExecution) {
+            MatchSaveFileTxt("./", "-SaveFile");
+            for (int i = 0; i < BUFSIZE10; i++) {
+                puts(SaveFilesTxtName[i].FileNames);
+                if (strlen(SaveFilesTxtName[i].FileNames) != 0) CountLoggedInAccounts++;
+                else break;
+            } FirstRuntimeExecution = false;
+        }
 
-    if (CountLoggedInAccounts >= 2) {
-        ClearScreen();
-        puts(BRIGHTGREEN154"══════════════════════════════════ SKYR D'Laundry ══════════════════════════════════"ANSI_COLOR_RESET);
-        puts(BRIGHTGREEN156"════════════════════════════ Starting Up :: Landing Page ═══════════════════════════"ANSI_COLOR_RESET);
-        
-        puts("");
-        puts(BRIGHTBLUE159"\t\t\t  Selamat Datang di " ANSI_STYLE_BOLD ANSI_STYLE_UNDERLINE"SKYR D'Laundry"ANSI_COLOR_RESET BRIGHTBLUE158"!"ANSI_COLOR_RESET);
-        printf("%d Accounts.\n", CountLoggedInAccounts);
-        getchar();
-
-    } else if (CountLoggedInAccounts == 1) {
-        ClearScreen();
-        puts(BRIGHTGREEN154"══════════════════════════════════ SKYR D'Laundry ══════════════════════════════════"ANSI_COLOR_RESET);
-        puts(BRIGHTGREEN156"════════════════════════════ Starting Up :: Landing Page ═══════════════════════════"ANSI_COLOR_RESET);
-        
-        puts("");
-        puts(BRIGHTBLUE159"\t\t\t  Selamat Datang di " ANSI_STYLE_BOLD ANSI_STYLE_UNDERLINE"SKYR D'Laundry"ANSI_COLOR_RESET BRIGHTBLUE158"!"ANSI_COLOR_RESET);
-        printf("%d Accounts.\n", CountLoggedInAccounts);
-        getchar();
-    }
-
-    do {
-        ClearScreen();
-        puts(BRIGHTGREEN154"══════════════════════════════════ SKYR D'Laundry ══════════════════════════════════"ANSI_COLOR_RESET);
-        puts(BRIGHTGREEN156"════════════════════════════ Starting Up :: Landing Page ═══════════════════════════"ANSI_COLOR_RESET);
-        
-        puts("");
-        puts(BRIGHTBLUE159"\t\t\t  Selamat Datang di " ANSI_STYLE_BOLD ANSI_STYLE_UNDERLINE"SKYR D'Laundry"ANSI_COLOR_RESET BRIGHTBLUE158"!"ANSI_COLOR_RESET);
-        puts(BRIGHTPURPLE212"\nSebelum memasuki aplikasi ini lebih lanjut, silakan lanjutkan terlebih dahulu proses"ANSI_COLOR_RESET);
-        puts(BRIGHTPURPLE212"langkah awal Anda dengan me-registrasi akun " BRIGHTPURPLE213 ANSI_STYLE_ITALIC ANSI_STYLE_UNDERLINE ANSI_STYLE_BOLD"(login jika sudah punya akun)"ANSI_COLOR_RESET BRIGHTPURPLE212 " dengan\nprofil akun yang kalian miliki.");
-        puts(BRIGHTPURPLE218 "  " ANSI_STYLE_BOLD "\n\t\t\t       " ANSI_STYLE_UNDERLINE"REGISTRASI " ANSI_STYLE_ITALIC"(Siging Up)"ANSI_COLOR_RESET BRIGHTPINK219"\n\t\t\t\t      ataupun"ANSI_COLOR_RESET BRIGHTBLUE158 ANSI_STYLE_BOLD "\n\t\t\t\t " ANSI_STYLE_UNDERLINE"LOGIN " ANSI_STYLE_ITALIC"(Signing In)"ANSI_COLOR_RESET);
-
-        puts("");
-        puts(BRIGHTPURPLE212"Silakan tentukan pilihan Anda!"ANSI_COLOR_RESET);
-        puts(BRIGHTPURPLE218"[0]: Registrasi Akun (Pengguna & Admin)"ANSI_COLOR_RESET);
-        puts(BRIGHTBLUE158"[1]: Logging In Akun (Pengguna & Admin)"ANSI_COLOR_RESET);
-
-        puts("");
-        printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &LoginOption);
-        printf(ANSI_COLOR_RESET""); fflush(stdin);
-    } while (ValidIntInput == 0);
-
-    switch (LoginOption) {
-        case 0:
-            do {
-                ClearScreen();
-                puts(BRIGHTGREEN154"══════════════════════════════════ SKYR D'Laundry ══════════════════════════════════"ANSI_COLOR_RESET);
-                puts(BRIGHTGREEN156"════════════════════════════ Starting Up :: Landing Page ═══════════════════════════"ANSI_COLOR_RESET);
-                
-                puts("");
-                puts(BRIGHTBLUE159"\t\t\t  Selamat Datang di " ANSI_STYLE_BOLD ANSI_STYLE_UNDERLINE"SKYR D'Laundry"ANSI_COLOR_RESET BRIGHTBLUE158"!"ANSI_COLOR_RESET);
-                puts(BRIGHTPURPLE212"\nSebelum memasuki aplikasi ini lebih lanjut, silakan lanjutkan terlebih dahulu proses"ANSI_COLOR_RESET);
-                puts(BRIGHTPURPLE212"langkah awal Anda dengan me-registrasi akun " BRIGHTPURPLE213 ANSI_STYLE_ITALIC ANSI_STYLE_UNDERLINE ANSI_STYLE_BOLD"(login jika sudah punya akun)"ANSI_COLOR_RESET BRIGHTPURPLE212 " dengan\nprofil akun yang kalian miliki.");
-                puts(BRIGHTPURPLE218 "  " ANSI_STYLE_BOLD "\n\t\t\t   >>> " ANSI_STYLE_UNDERLINE"REGISTRASI " ANSI_STYLE_ITALIC"(Siging Up)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" <<< "ANSI_COLOR_RESET BRIGHTPINK219"\n\t\t\t\t      ataupun"ANSI_COLOR_RESET BRIGHTBLUE158 ANSI_STYLE_BOLD "\n\t\t\t\t " ANSI_STYLE_UNDERLINE"LOGIN " ANSI_STYLE_ITALIC"(Signing In)"ANSI_COLOR_RESET);
-                
-                puts("");
-                puts(BRIGHTPURPLE218"Informasi diterima. Apakah Anda ingin me-registrasikan akun pribadi pengguna Anda, ");
-                puts("atau akun operator yang berperan sebagai ADMIN dari SKYR D'Laundry?"ANSI_COLOR_RESET);
-                puts(BRIGHTBLUE159"[0]: Pengguna (User)"ANSI_COLOR_RESET);
-                puts(BRIGHTBLUE159"[1]: Operator (Admin)"ANSI_COLOR_RESET);
-
-                puts("");
-                printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &LoginMode);
-                printf(ANSI_COLOR_RESET""); fflush(stdin);
-                break;
-            } while (ValidIntInput == 0);
+        if (CountLoggedInAccounts >= 2) {
+            ClearScreen();
+            puts(BRIGHTGREEN154"══════════════════════════════════ SKYR D'Laundry ══════════════════════════════════"ANSI_COLOR_RESET);
+            puts(BRIGHTGREEN156"════════════════════════════ Starting Up :: Landing Page ═══════════════════════════"ANSI_COLOR_RESET);
             
-            switch (LoginMode) {
-                case 0:  AccountRegistrationMenu(USER);  break;
-                case 1:  AccountRegistrationMenu(ADMIN); break;
-                default: main(); break;
-            }
-        case 1:
-            do {
-                ClearScreen();
-                puts(BRIGHTGREEN154"══════════════════════════════════ SKYR D'Laundry ══════════════════════════════════"ANSI_COLOR_RESET);
-                puts(BRIGHTGREEN156"════════════════════════════ Starting Up :: Landing Page ═══════════════════════════"ANSI_COLOR_RESET);
-                
-                puts("");
-                puts(BRIGHTBLUE159"\t\t\t  Selamat Datang di " ANSI_STYLE_BOLD ANSI_STYLE_UNDERLINE"SKYR D'Laundry"ANSI_COLOR_RESET BRIGHTBLUE158"!"ANSI_COLOR_RESET);
-                puts(BRIGHTPURPLE212"\nSebelum memasuki aplikasi ini lebih lanjut, silakan lanjutkan terlebih dahulu proses"ANSI_COLOR_RESET);
-                puts(BRIGHTPURPLE212"langkah awal Anda dengan me-registrasi akun " BRIGHTPURPLE213 ANSI_STYLE_ITALIC ANSI_STYLE_UNDERLINE ANSI_STYLE_BOLD"(login jika sudah punya akun)"ANSI_COLOR_RESET BRIGHTPURPLE212 " dengan\nprofil akun yang kalian miliki.");
-                puts(BRIGHTPURPLE218 "  " ANSI_STYLE_BOLD "\n\t\t\t       " ANSI_STYLE_UNDERLINE"REGISTRASI " ANSI_STYLE_ITALIC"(Siging Up)"ANSI_COLOR_RESET BRIGHTPINK219"\n\t\t\t\t      ataupun"ANSI_COLOR_RESET BRIGHTBLUE158 ANSI_STYLE_BOLD "\n\t\t\t     >>> " ANSI_STYLE_UNDERLINE"LOGIN " ANSI_STYLE_ITALIC"(Signing In)"ANSI_COLOR_RESET BRIGHTBLUE158 ANSI_STYLE_BOLD" <<< "ANSI_COLOR_RESET);
-                
-                puts("");
-                puts(BRIGHTPURPLE218"Informasi diterima. Apakah Anda ingin masuk dengan akun pribadi pengguna Anda, atau");
-                puts("dengan akun operator yang berperan sebagai ADMIN dari SKYR D'Laundry?"ANSI_COLOR_RESET);
-                puts(BRIGHTBLUE159"[0]: Pengguna (User)"ANSI_COLOR_RESET);
-                puts(BRIGHTBLUE159"[1]: Operator (Admin)"ANSI_COLOR_RESET);
+            puts("");
+            puts(BRIGHTBLUE159"\t\t\t  Selamat Datang di " ANSI_STYLE_BOLD ANSI_STYLE_UNDERLINE"SKYR D'Laundry"ANSI_COLOR_RESET BRIGHTBLUE158"!"ANSI_COLOR_RESET);
+            printf("%d Accounts.\n", CountLoggedInAccounts);
+            getchar();
 
-                puts("");
-                printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &LoginMode);
-                printf(ANSI_COLOR_RESET""); fflush(stdin);
-                break;
-            } while (ValidIntInput == 0);
+        } else if (CountLoggedInAccounts == 1) {
+            ClearScreen();
+            puts(BRIGHTGREEN154"══════════════════════════════════ SKYR D'Laundry ══════════════════════════════════"ANSI_COLOR_RESET);
+            puts(BRIGHTGREEN156"════════════════════════════ Starting Up :: Landing Page ═══════════════════════════"ANSI_COLOR_RESET);
             
-            switch (LoginMode) {
-                case 0:  AccountLoginMenu(USER);  break;
-                case 1:  AccountLoginMenu(ADMIN); break;
-                default: main(); break;
-            }
-        default: main(); break;
-    }
+            puts("");
+            puts(BRIGHTBLUE159"\t\t\t  Selamat Datang di " ANSI_STYLE_BOLD ANSI_STYLE_UNDERLINE"SKYR D'Laundry"ANSI_COLOR_RESET BRIGHTBLUE158"!"ANSI_COLOR_RESET);
+            printf("%d Accounts.\n", CountLoggedInAccounts);
+            getchar();
+        }
+
+        do {
+            ClearScreen();
+            puts(BRIGHTGREEN154"══════════════════════════════════ SKYR D'Laundry ══════════════════════════════════"ANSI_COLOR_RESET);
+            puts(BRIGHTGREEN156"════════════════════════════ Starting Up :: Landing Page ═══════════════════════════"ANSI_COLOR_RESET);
+            
+            puts("");
+            puts(BRIGHTBLUE159"\t\t\t  Selamat Datang di " ANSI_STYLE_BOLD ANSI_STYLE_UNDERLINE"SKYR D'Laundry"ANSI_COLOR_RESET BRIGHTBLUE158"!"ANSI_COLOR_RESET);
+            puts(BRIGHTPURPLE212"\nSebelum memasuki aplikasi ini lebih lanjut, silakan lanjutkan terlebih dahulu proses"ANSI_COLOR_RESET);
+            puts(BRIGHTPURPLE212"langkah awal Anda dengan me-registrasi akun " BRIGHTPURPLE213 ANSI_STYLE_ITALIC ANSI_STYLE_UNDERLINE ANSI_STYLE_BOLD"(login jika sudah punya akun)"ANSI_COLOR_RESET BRIGHTPURPLE212 " dengan\nprofil akun yang kalian miliki.");
+            puts(BRIGHTPURPLE218 "  " ANSI_STYLE_BOLD "\n\t\t\t       " ANSI_STYLE_UNDERLINE"REGISTRASI " ANSI_STYLE_ITALIC"(Siging Up)"ANSI_COLOR_RESET BRIGHTPINK219"\n\t\t\t\t      ataupun"ANSI_COLOR_RESET BRIGHTBLUE158 ANSI_STYLE_BOLD "\n\t\t\t\t " ANSI_STYLE_UNDERLINE"LOGIN " ANSI_STYLE_ITALIC"(Signing In)"ANSI_COLOR_RESET);
+
+            puts("");
+            puts(BRIGHTPURPLE212"Silakan tentukan pilihan Anda!"ANSI_COLOR_RESET);
+            puts(BRIGHTPURPLE218"[0]: Registrasi Akun (Pengguna & Admin)"ANSI_COLOR_RESET);
+            puts(BRIGHTBLUE158"[1]: Logging In Akun (Pengguna & Admin)"ANSI_COLOR_RESET);
+
+            puts("");
+            printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &LoginOption);
+            printf(ANSI_COLOR_RESET""); fflush(stdin);
+        } while (ValidIntInput == 0);
+
+        switch (LoginOption) {
+            case 0:
+                do {
+                    ClearScreen();
+                    puts(BRIGHTGREEN154"══════════════════════════════════ SKYR D'Laundry ══════════════════════════════════"ANSI_COLOR_RESET);
+                    puts(BRIGHTGREEN156"════════════════════════════ Starting Up :: Landing Page ═══════════════════════════"ANSI_COLOR_RESET);
+                    
+                    puts("");
+                    puts(BRIGHTBLUE159"\t\t\t  Selamat Datang di " ANSI_STYLE_BOLD ANSI_STYLE_UNDERLINE"SKYR D'Laundry"ANSI_COLOR_RESET BRIGHTBLUE158"!"ANSI_COLOR_RESET);
+                    puts(BRIGHTPURPLE212"\nSebelum memasuki aplikasi ini lebih lanjut, silakan lanjutkan terlebih dahulu proses"ANSI_COLOR_RESET);
+                    puts(BRIGHTPURPLE212"langkah awal Anda dengan me-registrasi akun " BRIGHTPURPLE213 ANSI_STYLE_ITALIC ANSI_STYLE_UNDERLINE ANSI_STYLE_BOLD"(login jika sudah punya akun)"ANSI_COLOR_RESET BRIGHTPURPLE212 " dengan\nprofil akun yang kalian miliki.");
+                    puts(BRIGHTPURPLE218 "  " ANSI_STYLE_BOLD "\n\t\t\t   >>> " ANSI_STYLE_UNDERLINE"REGISTRASI " ANSI_STYLE_ITALIC"(Siging Up)"ANSI_COLOR_RESET BRIGHTPURPLE218 ANSI_STYLE_BOLD" <<< "ANSI_COLOR_RESET BRIGHTPINK219"\n\t\t\t\t      ataupun"ANSI_COLOR_RESET BRIGHTBLUE158 ANSI_STYLE_BOLD "\n\t\t\t\t " ANSI_STYLE_UNDERLINE"LOGIN " ANSI_STYLE_ITALIC"(Signing In)"ANSI_COLOR_RESET);
+                    
+                    puts("");
+                    puts(BRIGHTPURPLE218"Informasi diterima. Apakah Anda ingin me-registrasikan akun pribadi pengguna Anda, ");
+                    puts("atau akun operator yang berperan sebagai ADMIN dari SKYR D'Laundry?"ANSI_COLOR_RESET);
+                    puts(BRIGHTBLUE159"[0]: Pengguna (User)"ANSI_COLOR_RESET);
+                    puts(BRIGHTBLUE159"[1]: Operator (Admin)"ANSI_COLOR_RESET);
+
+                    puts("");
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &LoginMode);
+                    printf(ANSI_COLOR_RESET""); fflush(stdin);
+                    break;
+                } while (ValidIntInput == 0);
+                
+                switch (LoginMode) {
+                    case 0:  AccountRegistrationMenu(USER);  break;
+                    case 1:  AccountRegistrationMenu(ADMIN); break;
+                    default: main(); break;
+                } break;
+            case 1:
+                do {
+                    ClearScreen();
+                    puts(BRIGHTGREEN154"══════════════════════════════════ SKYR D'Laundry ══════════════════════════════════"ANSI_COLOR_RESET);
+                    puts(BRIGHTGREEN156"════════════════════════════ Starting Up :: Landing Page ═══════════════════════════"ANSI_COLOR_RESET);
+                    
+                    puts("");
+                    puts(BRIGHTBLUE159"\t\t\t  Selamat Datang di " ANSI_STYLE_BOLD ANSI_STYLE_UNDERLINE"SKYR D'Laundry"ANSI_COLOR_RESET BRIGHTBLUE158"!"ANSI_COLOR_RESET);
+                    puts(BRIGHTPURPLE212"\nSebelum memasuki aplikasi ini lebih lanjut, silakan lanjutkan terlebih dahulu proses"ANSI_COLOR_RESET);
+                    puts(BRIGHTPURPLE212"langkah awal Anda dengan me-registrasi akun " BRIGHTPURPLE213 ANSI_STYLE_ITALIC ANSI_STYLE_UNDERLINE ANSI_STYLE_BOLD"(login jika sudah punya akun)"ANSI_COLOR_RESET BRIGHTPURPLE212 " dengan\nprofil akun yang kalian miliki.");
+                    puts(BRIGHTPURPLE218 "  " ANSI_STYLE_BOLD "\n\t\t\t       " ANSI_STYLE_UNDERLINE"REGISTRASI " ANSI_STYLE_ITALIC"(Siging Up)"ANSI_COLOR_RESET BRIGHTPINK219"\n\t\t\t\t      ataupun"ANSI_COLOR_RESET BRIGHTBLUE158 ANSI_STYLE_BOLD "\n\t\t\t     >>> " ANSI_STYLE_UNDERLINE"LOGIN " ANSI_STYLE_ITALIC"(Signing In)"ANSI_COLOR_RESET BRIGHTBLUE158 ANSI_STYLE_BOLD" <<< "ANSI_COLOR_RESET);
+                    
+                    puts("");
+                    puts(BRIGHTPURPLE218"Informasi diterima. Apakah Anda ingin masuk dengan akun pribadi pengguna Anda, atau");
+                    puts("dengan akun operator yang berperan sebagai ADMIN dari SKYR D'Laundry?"ANSI_COLOR_RESET);
+                    puts(BRIGHTBLUE159"[0]: Pengguna (User)"ANSI_COLOR_RESET);
+                    puts(BRIGHTBLUE159"[1]: Operator (Admin)"ANSI_COLOR_RESET);
+
+                    puts("");
+                    printf(ANSI_COLOR_WHITE"[INPUT] > "); ValidIntInput = scanf("%d", &LoginMode);
+                    printf(ANSI_COLOR_RESET""); fflush(stdin);
+                    break;
+                } while (ValidIntInput == 0);
+                
+                switch (LoginMode) {
+                    case 0:  AccountLoginMenu(USER);  break;
+                    case 1:  AccountLoginMenu(ADMIN); break;
+                    default: main(); break;
+                } break;
+            default: main(); break;
+        }
+
+    } else {
+        if (strlen(SignedInAccountFullName) != 0 && strlen(SignedInAccountUserName) != 0) {
+            strcpy(USERCheckLoggedInAccount, SignedInAccountUserName);  strcat(USERCheckLoggedInAccount, "-USER-SaveFile.dat");
+            strcpy(ADMINCheckLoggedInAccount, SignedInAccountUserName); strcat(ADMINCheckLoggedInAccount, "-ADMIN-SaveFile.dat");
+            
+            if      (access(USERCheckLoggedInAccount, F_OK) == 0 && strlen(SignedInAccountAdminCode) == 0) { UserMode = USER; }
+            else if (access(ADMINCheckLoggedInAccount, F_OK) == 0 && strlen(SignedInAccountAdminCode) > 0) { UserMode = ADMIN; }
+        } HomePageMenu(UserMode);
+    } return 0;
 }
